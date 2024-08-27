@@ -4,11 +4,7 @@ import pandas as pd
 import logging
 import locale
 import os
-
-# Importa a função carregar_comissoes do arquivo comissoes.py
 from comissoes import carregar_comissoes
-
-# Definindo a configuração regional para o Brasil
 locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
 # Configuração de log
