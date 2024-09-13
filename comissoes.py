@@ -131,7 +131,10 @@ COMISSOES_JSON = '''{
     },
     "Linha de Frente (Virgem)": {
         "A FATURAR": 0,
-        "BOL": 8,
+        "BOL": 12,
+        "SGPay": 12,
+        "SGPay Para Negativado": 5,
+        "SGPay Para Restrição": 8,
         "CC": 13,
         "CCRE": 13,
         "CD": 15,
@@ -164,6 +167,8 @@ COMISSOES_JSON = '''{
     "Linha de Frente (5°Ano/Infantil)": {
         "A FATURAR": 0,
         "BOL": 7,
+        "SGPay Para Negativado": 0,
+        "SGPay Para Restrição": 5,
         "CC": 18,
         "CCRE": 18,
         "CD": 20,
@@ -196,6 +201,8 @@ COMISSOES_JSON = '''{
     "Pacote Antecipado (Jailson)": {
         "A FATURAR": 0,
         "BOL": 4,
+        "SGPay Para Negativado": 0,
+        "SGPay Para Restrição": 3,
         "CC": 6,
         "CCRE": 6,
         "CD": 6,
@@ -223,10 +230,12 @@ COMISSOES_JSON = '''{
         "STONEEMPCC": 6,
         "TED": 7,
         "TRA": 7,
-        "Desconhecido": 0   
+        "Desconhecido": 0
     }, 
     "Pacote Antecipado (Kleber)": {
         "A FATURAR": 0,
+        "SGPay Para Negativado": 0,
+        "SGPay Para Restrição": 3,
         "BOL": 4,
         "CC": 5,
         "CCRE": 5,
@@ -260,6 +269,8 @@ COMISSOES_JSON = '''{
     "Kleber Borges": {
         "A FATURAR": 0,
         "BOL": 4,
+        "SGPay Para Negativado": 0,
+        "SGPay Para Restrição": 3,
         "CC": 5,
         "CCRE": 5,
         "CD": 6,
@@ -292,9 +303,8 @@ COMISSOES_JSON = '''{
 }
 '''
 
-
 def carregar_comissoes():
     try:
         return json.loads(COMISSOES_JSON)
-    except json.JSONDecodeError:
-        raise ValueError("Erro ao identificar o JSON.")
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Erro ao identificar o JSON: {str(e)}")

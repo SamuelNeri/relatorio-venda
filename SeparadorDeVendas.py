@@ -1,15 +1,15 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
 import pandas as pd
 import logging
 import locale
 import os
 from comissoes import carregar_comissoes
+
 locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
 # Configuração de log
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
 
 class Comissao:
     def __init__(self):
@@ -28,7 +28,6 @@ class Comissao:
         comissao = (porcentagem_comissao / 100) * valor_venda
         return comissao
 
-
 class SeparadorDeVendas:
     def __init__(self, nome_arquivo):
         self.nome_arquivo = nome_arquivo
@@ -36,29 +35,22 @@ class SeparadorDeVendas:
         self.comissao = Comissao()
 
     def carregar_dados(self):
-        # Carrega os dados da planilha
         self.df = pd.read_excel(self.nome_arquivo)
 
     def tratar_nans(self):
-        # Substitui valores NaN na coluna 'Tipo Venda' por 'Desconhecido'
         self.df.fillna({'Tipo Venda': 'Desconhecido'}, inplace=True)
 
     def calcular_comissoes(self):
         if self.df is None:
             raise Exception("Dados não carregados. Execute 'carregar_dados()' primeiro.")
 
-        # Trata valores NaN
         self.tratar_nans()
-
-        # Inicializa a coluna de Comissão
         self.df['Comissão'] = 0
 
-        # Lista de colunas para calcular as comissões
         colunas_pagamento = ['A FATURAR', 'BOL', 'CC', 'CCRE', 'CD', 'CDEB', 'CTL', 'SGPAYFICTICIO', 'CSGP', 'CHQ',
                              'CHEMP', 'CMBA', 'DAUT', 'DEB', 'DEP', 'DEPONCONTA', 'DIN', 'DOC', 'PAGARME', 'PIX', 'PIXSGP2',
                              'RPAY', 'REP', 'STONEBSBCC', 'STCRED', 'STDEB', 'STONEEMPCC', 'TED', 'TRA']
 
-        # Calcula a comissão para cada linha
         for idx, row in self.df.iterrows():
             tipo_album = row['Vendedor']
             for metodo_pagamento in colunas_pagamento:
@@ -71,7 +63,6 @@ class SeparadorDeVendas:
         if self.df is None:
             raise Exception("Dados não carregados. Execute 'carregar_dados()' primeiro.")
 
-        # Agrupa os dados por Vendedor e calcula a soma dos Valores do Pedido e das Comissões
         vendas_por_vendedor = self.df.groupby('Vendedor').agg({
             'Valor do Pedido': 'sum',
             'Comissão': 'sum'
@@ -80,42 +71,71 @@ class SeparadorDeVendas:
         return vendas_por_vendedor
 
     def gerar_relatorio(self, nome_arquivo_saida):
-        # Gera o relatório separado por vendedor e salva em uma nova planilha
         vendas_por_vendedor = self.separar_por_vendedor()
         vendas_por_vendedor.to_excel(nome_arquivo_saida, index=False)
-
 
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
 
         self.title("Sistema de Relatório de Vendas")
-        self.geometry("400x200")
+        self.geometry("800x600")
+        self.configure(bg='#f0f0f0')
 
-        self.label = tk.Label(self, text="Selecione o arquivo de vendas:")
-        self.label.pack(pady=10)
-
-        self.button_select = tk.Button(self, text="Selecionar Arquivo", command=self.selecionar_arquivo)
-        self.button_select.pack(pady=5)
-
-        self.button_calculate = tk.Button(self, text="Calcular Comissões", command=self.calcular_comissoes)
-        self.button_calculate.pack(pady=5)
-
-        self.button_show = tk.Button(self, text="Mostrar Resultados", command=self.mostrar_resultados)
-        self.button_show.pack(pady=5)
-
-        self.button_save = tk.Button(self, text="Salvar Relatório", command=self.salvar_relatorio)
-        self.button_save.pack(pady=5)
+        self.create_widgets()
 
         self.nome_arquivo = None
         self.separador = None
 
+    def create_widgets(self):
+        # Frame principal
+        main_frame = ttk.Frame(self, padding="10")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Estilo para os widgets
+        style = ttk.Style()
+        style.theme_use('clam')
+
+        # Label e Entry para o arquivo selecionado
+        file_frame = ttk.Frame(main_frame)
+        file_frame.pack(fill=tk.X, pady=10)
+
+        ttk.Label(file_frame, text="Arquivo selecionado:").pack(side=tk.LEFT)
+        self.file_entry = ttk.Entry(file_frame, width=50)
+        self.file_entry.pack(side=tk.LEFT, padx=5)
+
+        # Botões
+        button_frame = ttk.Frame(main_frame)
+        button_frame.pack(pady=10)
+
+        ttk.Button(button_frame, text="Selecionar Arquivo", command=self.selecionar_arquivo).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="Calcular Comissões", command=self.calcular_comissoes).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="Mostrar Resultados", command=self.mostrar_resultados).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="Salvar Relatório", command=self.salvar_relatorio).pack(side=tk.LEFT, padx=5)
+
+        # Treeview para mostrar resultados
+        self.tree = ttk.Treeview(main_frame, columns=('Vendedor', 'Valor das Vendas', 'Comissão'), show='headings')
+        self.tree.heading('Vendedor', text='Vendedor')
+        self.tree.heading('Valor das Vendas', text='Valor das Vendas')
+        self.tree.heading('Comissão', text='Comissão')
+        self.tree.pack(fill=tk.BOTH, expand=True, pady=10)
+
+        # Scrollbar para o Treeview
+        scrollbar = ttk.Scrollbar(main_frame, orient=tk.VERTICAL, command=self.tree.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.tree.configure(yscrollcommand=scrollbar.set)
+
+        # Barra de status
+        self.status_var = tk.StringVar()
+        self.status_bar = ttk.Label(self, textvariable=self.status_var, relief=tk.SUNKEN, anchor=tk.W)
+        self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+
     def selecionar_arquivo(self):
-        self.nome_arquivo = filedialog.askopenfilename(
-            filetypes=[("Excel files", "*.xlsx *.xls")]
-        )
+        self.nome_arquivo = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx *.xls")])
         if self.nome_arquivo:
-            messagebox.showinfo("Arquivo Selecionado", f"Arquivo {os.path.basename(self.nome_arquivo)} selecionado com sucesso.")
+            self.file_entry.delete(0, tk.END)
+            self.file_entry.insert(0, os.path.basename(self.nome_arquivo))
+            self.status_var.set(f"Arquivo selecionado: {os.path.basename(self.nome_arquivo)}")
 
     def calcular_comissoes(self):
         if not self.nome_arquivo:
@@ -125,7 +145,8 @@ class App(tk.Tk):
         self.separador = SeparadorDeVendas(self.nome_arquivo)
         self.separador.carregar_dados()
         self.separador.calcular_comissoes()
-        messagebox.showinfo("Cálculo Concluído", "As comissões foram calculadas com sucesso!")
+        self.status_var.set("As comissões foram calculadas com sucesso!")
+        self.mostrar_resultados()
 
     def mostrar_resultados(self):
         if not self.separador:
@@ -133,15 +154,19 @@ class App(tk.Tk):
             return
 
         vendas_por_vendedor = self.separador.separar_por_vendedor()
-        resultados_texto = "Vendas por Vendedor:\n\n"
 
+        # Limpar a Treeview
+        for i in self.tree.get_children():
+            self.tree.delete(i)
+
+        # Preencher a Treeview com os resultados
         for _, row in vendas_por_vendedor.iterrows():
             vendedor = row['Vendedor']
             valor_vendas = locale.currency(row['Valor do Pedido'], grouping=True)
             comissao = locale.currency(row['Comissão'], grouping=True)
-            resultados_texto += f"Vendedor: {vendedor}\nValor das Vendas: {valor_vendas}\nComissão: {comissao}\n\n"
+            self.tree.insert('', 'end', values=(vendedor, valor_vendas, comissao))
 
-        messagebox.showinfo("Resultados", resultados_texto)
+        self.status_var.set("Resultados exibidos na tabela.")
 
     def salvar_relatorio(self):
         if not self.separador:
@@ -154,8 +179,7 @@ class App(tk.Tk):
         )
         if nome_arquivo_saida:
             self.separador.gerar_relatorio(nome_arquivo_saida)
-            messagebox.showinfo("Relatório Salvo", f"Relatório salvo em {nome_arquivo_saida}.")
-
+            self.status_var.set(f"Relatório salvo em {nome_arquivo_saida}.")
 
 if __name__ == "__main__":
     app = App()
