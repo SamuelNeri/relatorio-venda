@@ -1,24 +1,80 @@
-# Sistema de Relatório de Vendas com Cálculo de Comissões
+# Sistema Unificado de Relatórios de Vendas
 
-Este é um sistema de relatório de vendas com cálculo de comissões desenvolvido em Python. O sistema utiliza o Tkinter para a interface gráfica e o Pandas para manipulação de dados de vendas contidos em um arquivo Excel. Ele permite calcular comissões com base em diferentes tipos de vendas e métodos de pagamento, e também exibir ou salvar os resultados.
+## Descrição
+O Sistema Unificado de Relatórios de Vendas é uma aplicação desktop que integra dois subsistemas: o Separador de Boletos e o Separador de Vendas. Esta ferramenta foi desenvolvida para facilitar a geração de relatórios de vendas e o processamento de comissões, oferecendo uma interface unificada para acessar ambas as funcionalidades.
 
-## Funcionalidades
+## Características
+- Interface gráfica intuitiva desenvolvida com Tkinter
+- Integração de dois sistemas distintos em uma única aplicação
+- Geração de relatórios de vendas
+- Cálculo de comissões baseado em regras predefinidas
+- Exportação de dados para arquivos Excel
 
-- **Seleção de Arquivo:** Permite ao usuário selecionar um arquivo Excel contendo os dados de vendas.
-- **Cálculo de Comissões:** Calcula automaticamente as comissões com base nas regras definidas no arquivo `comissoes.py`.
-- **Mostrar Resultados:** Exibe os resultados calculados em uma janela pop-up sem a necessidade de salvar o arquivo.
-- **Salvar Relatório:** Permite salvar o relatório de vendas por vendedor em um arquivo Excel.
-- **Interface Intuitiva:** Interface gráfica amigável para fácil utilização.
+## Requisitos do Sistema
+- Python 3.7 ou superior
+- Bibliotecas: tkinter, pandas, openpyxl
 
-## Pré-requisitos
+## Instalação
 
-Certifique-se de ter o Python instalado (recomendado: versão 3.7 ou superior) e as seguintes bibliotecas:
+1. Clone o repositório ou faça o download dos arquivos do projeto.
 
-- `tkinter`: Biblioteca padrão do Python para a interface gráfica.
-- `pandas`: Para manipulação e análise de dados.
-- `openpyxl`: Para leitura e escrita de arquivos Excel.
+2. Instale as dependências necessárias:
+   ```
+   pip install pandas openpyxl
+   ```
 
-Você pode instalar as bibliotecas necessárias usando o pip:
+3. Certifique-se de que todos os arquivos do projeto estão no mesmo diretório:
+   - main.py
+   - SeparadorBoletos.py
+   - SeparadorDeVendas.py
+   - comissoes.py
 
-```bash
-pip install pandas openpyxl
+## Uso
+
+1. Execute o arquivo principal:
+   ```
+   python main.py
+   ```
+
+2. Na interface principal, selecione o sistema que deseja utilizar:
+   - "Separador de Boletos"
+   - "Separador de Vendas"
+
+3. Siga as instruções na interface de cada subsistema para carregar dados, gerar relatórios ou calcular comissões.
+
+## Estrutura do Projeto
+- `main.py`: Arquivo principal que inicia a interface unificada
+- `SeparadorBoletos.py`: Módulo para processamento de boletos
+- `SeparadorDeVendas.py`: Módulo para separação e análise de vendas
+- `comissoes.py`: Contém as regras e cálculos de comissões
+
+## Compilação
+Para criar um executável standalone:
+
+1. Instale o PyInstaller:
+   ```
+   pip install pyinstaller
+   ```
+
+2. Compile o projeto:
+   ```
+   pyinstaller --name="SistemaUnificado" --windowed --onefile main.py
+   ```
+
+3. O executável será gerado na pasta `dist`.
+
+## Suporte
+Para relatar problemas ou sugerir melhorias, por favor, abra uma issue no repositório do projeto.
+
+## Contribuindo
+Contribuições são bem-vindas! Por favor, leia as diretrizes de contribuição antes de enviar pull requests.
+
+## Licença
+[Inserir informações de licença aqui]
+
+## Autores
+[Seu nome ou o nome da sua equipe]
+
+---
+
+Desenvolvido com ❤️ para otimizar o processo de relatórios de vendas e comissões.
