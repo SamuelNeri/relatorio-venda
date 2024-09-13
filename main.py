@@ -25,8 +25,8 @@ class SistemaUnificado(tk.Tk):
         ttk.Label(main_frame, text="Escolha um Sistema", font=('Arial', 16, 'bold')).pack(pady=20)
         
         # Botões
-        ttk.Button(main_frame, text="Separador de Boletos", command=self.open_separador_boleto).pack(fill=tk.X, pady=5)
-        ttk.Button(main_frame, text="Separador de Vendas", command=self.open_separador_vendas).pack(fill=tk.X, pady=5)
+        ttk.Button(main_frame, text="Relatório de Boletos", command=self.open_separador_boleto).pack(fill=tk.X, pady=5)
+        ttk.Button(main_frame, text="Relatório de Valores", command=self.open_separador_vendas).pack(fill=tk.X, pady=5)
     
     def find_main_class(self, module):
         # Encontra a primeira classe no módulo que herda de tk.Tk

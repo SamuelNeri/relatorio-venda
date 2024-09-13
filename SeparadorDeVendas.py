@@ -1,5 +1,8 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
+from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Font, Alignment, Border, Side
 import pandas as pd
 import logging
 import locale
@@ -70,9 +73,118 @@ class SeparadorDeVendas:
 
         return vendas_por_vendedor
 
+    def gerar_relatorio_detalhado(self):
+        if self.df is None:
+            raise Exception("Dados não carregados. Execute 'carregar_dados()' primeiro.")
+
+        colunas_pagamento = ['A FATURAR', 'BOL', 'CC', 'CCRE', 'CD', 'CDEB', 'CTL', 'SGPAYFICTICIO', 'CSGP', 'CHQ',
+                             'CHEMP', 'CMBA', 'DAUT', 'DEB', 'DEP', 'DEPONCONTA', 'DIN', 'DOC', 'PAGARME', 'PIX', 'PIXSGP2',
+                             'RPAY', 'REP', 'STONEBSBCC', 'STCRED', 'STDEB', 'STONEEMPCC', 'TED', 'TRA']
+
+        detalhado = []
+        for _, row in self.df.iterrows():
+            vendedor = row['Vendedor']
+            for metodo in colunas_pagamento:
+                if metodo in row and pd.notna(row[metodo]) and row[metodo] > 0:
+                    valor = row[metodo]
+                    comissao = self.comissao.calcular_comissao(vendedor, metodo, valor)
+                    detalhado.append({
+                        'Vendedor': vendedor,
+                        'Método de Pagamento': metodo,
+                        'Valor': valor,
+                        'Comissão': comissao
+                    })
+
+        df_detalhado = pd.DataFrame(detalhado)
+        
+        # Calcular totais
+        total_valor = df_detalhado['Valor'].sum()
+        total_comissao = df_detalhado['Comissão'].sum()
+        
+        # Adicionar linha de totais
+        df_totais = pd.DataFrame([{
+            'Vendedor': 'TOTAL',
+            'Método de Pagamento': '',
+            'Valor': total_valor,
+            'Comissão': total_comissao
+        }])
+        
+        df_detalhado = pd.concat([df_detalhado, df_totais], ignore_index=True)
+
+        return df_detalhado
+
+    def gerar_resumo_por_pagamento(self):
+        if self.df is None:
+            raise Exception("Dados não carregados. Execute 'carregar_dados()' primeiro.")
+
+        colunas_pagamento = ['A FATURAR', 'BOL', 'CC', 'CCRE', 'CD', 'CDEB', 'CTL', 'SGPAYFICTICIO', 'CSGP', 'CHQ',
+                             'CHEMP', 'CMBA', 'DAUT', 'DEB', 'DEP', 'DEPONCONTA', 'DIN', 'DOC', 'PAGARME', 'PIX', 'PIXSGP2',
+                             'RPAY', 'REP', 'STONEBSBCC', 'STCRED', 'STDEB', 'STONEEMPCC', 'TED', 'TRA']
+
+        resumo = []
+        for metodo in colunas_pagamento:
+            total_valor = self.df[metodo].sum()
+            total_comissao = sum(self.comissao.calcular_comissao(row['Vendedor'], metodo, row[metodo])
+                                 for _, row in self.df.iterrows() if pd.notna(row[metodo]) and row[metodo] > 0)
+            if total_valor > 0:
+                resumo.append({
+                    'Método de Pagamento': metodo,
+                    'Valor Total': total_valor,
+                    'Comissão Total': total_comissao
+                })
+
+        df_resumo = pd.DataFrame(resumo)
+        
+        # Adicionar linha de totais
+        total_valor = df_resumo['Valor Total'].sum()
+        total_comissao = df_resumo['Comissão Total'].sum()
+        df_resumo = pd.concat([df_resumo, pd.DataFrame([{
+            'Método de Pagamento': 'TOTAL',
+            'Valor Total': total_valor,
+            'Comissão Total': total_comissao
+        }])], ignore_index=True)
+
+        return df_resumo
+
     def gerar_relatorio(self, nome_arquivo_saida):
         vendas_por_vendedor = self.separar_por_vendedor()
-        vendas_por_vendedor.to_excel(nome_arquivo_saida, index=False)
+        detalhado = self.gerar_relatorio_detalhado()
+        resumo_pagamento = self.gerar_resumo_por_pagamento()
+
+        with pd.ExcelWriter(nome_arquivo_saida, engine='openpyxl') as writer:
+            vendas_por_vendedor.to_excel(writer, sheet_name='Resumo por Vendedor', index=False)
+            detalhado.to_excel(writer, sheet_name='Detalhado por Pagamento', index=False)
+            resumo_pagamento.to_excel(writer, sheet_name='Resumo por Forma de Pagamento', index=False)
+
+        # Ajustar largura das colunas e formatar
+        wb = load_workbook(nome_arquivo_saida)
+        for sheet in wb.sheetnames:
+            ws = wb[sheet]
+            self.formatar_planilha(ws)
+
+        wb.save(nome_arquivo_saida)
+
+    def formatar_planilha(self, ws):
+        for column in ws.columns:
+            max_length = max(len(str(cell.value)) for cell in column)
+            ws.column_dimensions[column[0].column_letter].width = max_length + 2
+
+        # Formatar cabeçalhos
+        for cell in ws[1]:
+            cell.font = Font(bold=True)
+            cell.alignment = Alignment(horizontal='center')
+
+        # Formatar a última linha (totais)
+        last_row = ws.max_row
+        for col in range(1, ws.max_column + 1):
+            cell = ws.cell(row=last_row, column=col)
+            cell.font = Font(bold=True)
+            cell.border = Border(top=Side(style='thin'), bottom=Side(style='double'))
+
+        # Formatar colunas de valores
+        for col in range(2, ws.max_column + 1):  # Assumindo que as colunas de valores começam na segunda coluna
+            for cell in ws[get_column_letter(col)][2:]:
+                cell.number_format = '#,##0.00'
 
 class App(tk.Tk):
     def __init__(self):
@@ -82,6 +194,7 @@ class App(tk.Tk):
         self.geometry("800x600")
         self.configure(bg='#f0f0f0')
 
+        self.status_var = tk.StringVar()  # Inicializa status_var como atributo da instância
         self.create_widgets()
 
         self.nome_arquivo = None
@@ -126,7 +239,6 @@ class App(tk.Tk):
         self.tree.configure(yscrollcommand=scrollbar.set)
 
         # Barra de status
-        self.status_var = tk.StringVar()
         self.status_bar = ttk.Label(self, textvariable=self.status_var, relief=tk.SUNKEN, anchor=tk.W)
         self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
@@ -180,6 +292,8 @@ class App(tk.Tk):
         if nome_arquivo_saida:
             self.separador.gerar_relatorio(nome_arquivo_saida)
             self.status_var.set(f"Relatório salvo em {nome_arquivo_saida}.")
+            messagebox.showinfo("Relatório Salvo", f"O relatório foi salvo em {nome_arquivo_saida} com três planilhas: "
+                                "'Resumo por Vendedor', 'Detalhado por Pagamento' e 'Resumo por Forma de Pagamento'.")
 
 if __name__ == "__main__":
     app = App()
