@@ -72,10 +72,6 @@ Para relatar problemas ou sugerir melhorias, por favor, abra uma issue no reposi
 
 ## Contribuindo
 Contribuições são bem-vindas! Por favor, leia as diretrizes de contribuição antes de enviar pull requests.
-
-## Licença
-[Inserir informações de licença aqui]
-
 ---
 
 Desenvolvido com ❤️ para otimizar o processo de relatórios de vendas e cálculo de comissões.
