@@ -14,6 +14,14 @@ class SalesAnalyzerGUI:
         self.root = root
         self.root.title("Sistema de Análise de Vendas")
         
+        # Define o ícone da janela
+        try:
+            icon_path = 'icon.ico'
+            if os.path.exists(icon_path):
+                self.root.iconbitmap(icon_path)
+        except Exception as e:
+            print(f"Erro ao carregar ícone: {str(e)}")
+        
         # Initialize analyzer
         self.analyzer = SalesAnalyzer()
         
@@ -40,25 +48,19 @@ class SalesAnalyzerGUI:
         
         # Load and display icon
         try:
-            # Carrega o ícone SVG usando PIL
-            icon_path = os.path.join('assets', 'icon.svg')
+            # Carrega o ícone usando PIL
+            icon_path = 'icon.ico'
             if os.path.exists(icon_path):
-                # Converte SVG para PhotoImage
-                from cairosvg import svg2png
-                from io import BytesIO
-                
-                png_data = BytesIO()
-                svg2png(url=icon_path, write_to=png_data, output_width=64, output_height=64)
-                png_data.seek(0)
-                
-                icon_image = Image.open(png_data)
+                # Carrega e redimensiona o ícone para o menu
+                icon_image = Image.open(icon_path)
+                icon_image = icon_image.resize((64, 64), Image.Resampling.LANCZOS)
                 photo = ImageTk.PhotoImage(icon_image)
                 
                 icon_label = ttk.Label(menu_frame, image=photo)
-                icon_label.image = photo  # Keep a reference!
+                icon_label.image = photo  # Mantém uma referência
                 icon_label.pack(pady=(0, 10))
         except Exception as e:
-            print(f"Erro ao carregar ícone: {str(e)}")
+            print(f"Erro ao carregar ícone no menu: {str(e)}")
         
         # Add company logo/name placeholder
         logo_label = ttk.Label(menu_frame, text="Sistema de\nAnálise de Vendas", justify='center')
@@ -211,7 +213,7 @@ class SalesAnalyzerGUI:
         doc_btn = ttk.Button(
             options_frame,
             text="Acessar Documentação",
-            command=lambda: webbrowser.open("https://docs.example.com"),
+            command=lambda: webbrowser.open("https://studio-formaturas-sge.gitbook.io/sistema-studio-formaturas/relatorios/sistema-de-relatorios-de-venda#relatorios"),
             width=30
         )
         doc_btn.pack(pady=10)
@@ -219,8 +221,8 @@ class SalesAnalyzerGUI:
         # FAQ button
         faq_btn = ttk.Button(
             options_frame,
-            text="Perguntas Frequentes (FAQ)",
-            command=lambda: webbrowser.open("https://faq.example.com"),
+            text="FAQ",
+            command=lambda: webbrowser.open("https://studio-formaturas-sge.gitbook.io/sistema-studio-formaturas/relatorios/sistema-de-relatorios-de-venda#relatorios"),
             width=30
         )
         faq_btn.pack(pady=10)
@@ -228,8 +230,8 @@ class SalesAnalyzerGUI:
         # Contact support button
         contact_btn = ttk.Button(
             options_frame,
-            text="Contatar Suporte",
-            command=lambda: webbrowser.open("mailto:support@example.com"),
+            text="Suporte",
+            command=lambda: webbrowser.open("mailto:samuel.neri@outlook.com"),
             width=30
         )
         contact_btn.pack(pady=10)

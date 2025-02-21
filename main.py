@@ -10,11 +10,11 @@ def main():
         root.title("Sistema de Análise de Vendas")
         
         # Set minimum window size
-        root.minsize(1200, 800)
+        root.minsize(800, 600)
         
         # Center window on screen
-        window_width = 1400
-        window_height = 900
+        window_width = 800
+        window_height = 600
         screen_width = root.winfo_screenwidth()
         screen_height = root.winfo_screenheight()
         
